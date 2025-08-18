@@ -1,77 +1,109 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pedidos CVC</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos CVC 58mm</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      font-size: 1.8em;
-      padding: 20px;
-      background: #f8f8f8;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 0;
+      padding: 10px;
+      max-width: 58mm;
     }
-    h1 {
-      color: #b40000;
-      font-size: 2.2em;
-    }
-    label, input, select, button {
-      display: block;
-      margin: 10px 0;
+    input, select, button {
+      font-size: 14px;
       width: 100%;
+      margin-bottom: 8px;
+      padding: 4px;
     }
-    button {
-      font-size: 1.2em;
-      padding: 10px;
-      background-color: #b40000;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-    .comanda {
-      margin-top: 20px;
-      background: white;
-      padding: 10px;
-      border: 1px dashed #999;
+    .ticket {
+      border-top: 1px dashed #000;
+      margin-top: 10px;
+      padding-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Sistema de Pedidos CVC</h1>
+  <h2>Pedido CVC</h2>
   <form id="pedido-form">
-    <label>Producto:
-      <input type="text" id="producto" required />
+    <label>Nombre del Cliente:
+      <input type="text" id="nombre" required>
     </label>
-    <label>Tipo de pedido:
-      <select id="tipo">
-        <option value="kg">Kilogramos</option>
-        <option value="pz">Piezas</option>
+    <label>Dirección:
+      <input type="text" id="direccion" required>
+    </label>
+    <label>Quién Entrega:
+      <input type="text" id="entrega" required>
+    </label>
+    <label>¿Es venta a mostrador?
+      <select id="mostrador">
+        <option value="Sí">Sí</option>
+        <option value="No">No</option>
       </select>
     </label>
-    <label>Cantidad:
-      <input type="number" id="cantidad" required />
-    </label>
-    <button type="submit">Agregar a comanda</button>
+    <div id="productos"></div>
+    <button type="button" onclick="agregarProducto()">Agregar Producto</button>
+    <button type="submit">Generar Comanda</button>
   </form>
 
-  <div class="comanda" id="comanda-area"></div>
-
-  <button onclick="window.print()">🖨️ Imprimir Comanda</button>
+  <div class="ticket" id="ticket"></div>
 
   <script>
+    let index = 0;
+
+    function agregarProducto() {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <label>Producto:
+          <input type="text" name="producto-${index}" required>
+        </label>
+        <label>Cantidad:
+          <input type="number" name="cantidad-${index}" min="0" step="any" required>
+        </label>
+        <label>Unidad:
+          <select name="unidad-${index}">
+            <option value="kg">Kilos</option>
+            <option value="pzas">Piezas</option>
+          </select>
+        </label>
+        <hr>
+      `;
+      document.getElementById("productos").appendChild(div);
+      index++;
+    }
+
     document.getElementById("pedido-form").addEventListener("submit", function(e) {
       e.preventDefault();
-      const producto = document.getElementById("producto").value;
-      const tipo = document.getElementById("tipo").value;
-      const cantidad = document.getElementById("cantidad").value;
 
-      const comandaArea = document.getElementById("comanda-area");
-      const line = document.createElement("div");
-      line.textContent = `${producto} — ${cantidad} ${tipo === 'kg' ? 'kg' : 'pz'}`;
-      comandaArea.appendChild(line);
+      const nombre = document.getElementById("nombre").value;
+      const direccion = document.getElementById("direccion").value;
+      const entrega = document.getElementById("entrega").value;
+      const mostrador = document.getElementById("mostrador").value;
 
+      let productos = "";
+      for (let i = 0; i < index; i++) {
+        const prod = document.querySelector(`[name='producto-${i}']`).value;
+        const cant = document.querySelector(`[name='cantidad-${i}']`).value;
+        const unid = document.querySelector(`[name='unidad-${i}']`).value;
+        productos += `\n${prod} - ${cant} ${unid}`;
+      }
+
+      const ticketHTML = `
+        <strong>Cliente:</strong> ${nombre}<br>
+        <strong>Dirección:</strong> ${direccion}<br>
+        <strong>Entrega:</strong> ${entrega}<br>
+        <strong>Mostrador:</strong> ${mostrador}<br>
+        <strong>Productos:</strong><pre>${productos}</pre>
+        <button onclick="window.print()">🖨️ Imprimir Ticket</button>
+      `;
+      document.getElementById("ticket").innerHTML = ticketHTML;
+
+      // Limpia el formulario para el siguiente pedido
       document.getElementById("pedido-form").reset();
+      document.getElementById("productos").innerHTML = "";
+      index = 0;
     });
   </script>
 </body>
