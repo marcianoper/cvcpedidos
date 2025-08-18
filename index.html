@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pedidos CVC</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 1.8em;
+      padding: 20px;
+      background: #f8f8f8;
+    }
+    h1 {
+      color: #b40000;
+      font-size: 2.2em;
+    }
+    label, input, select, button {
+      display: block;
+      margin: 10px 0;
+      width: 100%;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 10px;
+      background-color: #b40000;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .comanda {
+      margin-top: 20px;
+      background: white;
+      padding: 10px;
+      border: 1px dashed #999;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sistema de Pedidos CVC</h1>
+  <form id="pedido-form">
+    <label>Producto:
+      <input type="text" id="producto" required />
+    </label>
+    <label>Tipo de pedido:
+      <select id="tipo">
+        <option value="kg">Kilogramos</option>
+        <option value="pz">Piezas</option>
+      </select>
+    </label>
+    <label>Cantidad:
+      <input type="number" id="cantidad" required />
+    </label>
+    <button type="submit">Agregar a comanda</button>
+  </form>
+
+  <div class="comanda" id="comanda-area"></div>
+
+  <button onclick="window.print()">🖨️ Imprimir Comanda</button>
+
+  <script>
+    document.getElementById("pedido-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const producto = document.getElementById("producto").value;
+      const tipo = document.getElementById("tipo").value;
+      const cantidad = document.getElementById("cantidad").value;
+
+      const comandaArea = document.getElementById("comanda-area");
+      const line = document.createElement("div");
+      line.textContent = `${producto} — ${cantidad} ${tipo === 'kg' ? 'kg' : 'pz'}`;
+      comandaArea.appendChild(line);
+
+      document.getElementById("pedido-form").reset();
+    });
+  </script>
+</body>
+</html>
