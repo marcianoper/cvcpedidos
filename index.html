@@ -1,110 +1,334 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pedidos CVC 58mm</title>
-  <style>
-    body {
-      font-family: monospace;
-      font-size: 12px;
-      margin: 0;
-      padding: 10px;
-      max-width: 58mm;
-    }
-    input, select, button {
-      font-size: 14px;
-      width: 100%;
-      margin-bottom: 8px;
-      padding: 4px;
-    }
-    .ticket {
-      border-top: 1px dashed #000;
-      margin-top: 10px;
-      padding-top: 10px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CVC Pedidos (Supabase) — 58mm</title>
+<style>
+  :root{--ink:#111}
+  *{box-sizing:border-box}
+  body{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; margin:0; background:#f6f7f8; color:var(--ink)}
+  header{background:#0a7a3b;color:#fff;padding:12px 14px}
+  h1{font-size:16px;margin:0}
+  main{max-width:1000px;margin:0 auto;padding:12px;display:grid;gap:10px}
+  .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
+  label{font-size:14px;display:block;margin:6px 0 4px}
+  input,select,button{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:14px}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grid{display:grid;gap:8px}
+  .muted{color:#666;font-size:12px}
+  .product{border:1px solid #eee;border-radius:10px;padding:8px;display:grid;gap:6px}
+  .p-head{display:flex;align-items:center;gap:8px}
+  .p-name{font-weight:700;flex:1}
+  .p-ctrls{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:6px}
+  .right{text-align:right}
+  .ok{color:#0a7a3b}
+  .err{color:#b00020}
+
+  /* Ticket base (pantalla) */
+  #ticket{background:#fff;border:1px dashed #999;border-radius:10px;padding:10px;max-width:320px;margin:0 auto}
+  #ticket h3{margin:0 0 6px;text-align:center;font-size:14px}
+  #ticket .meta{font-size:12px;margin-bottom:6px}
+  #ticket table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+  #ticket th,#ticket td{padding:4px 2px;border-bottom:1px dashed #ddd;word-wrap:break-word}
+  #ticket tfoot td{border-top:1px solid #999;font-weight:bold}
+  #ticket .center{text-align:center}
+
+  /* PRINT 58mm */
+  @media print {
+    @page { size: 58mm auto; margin: 2mm; } /* ancho rollo 58mm */
+    body{background:#fff}
+    header, main > .card:not(#printCard), .no-print { display:none !important; }
+    #printCard{ display:block !important; padding:0; box-shadow:none; border:none; }
+    #ticket{ width: 54mm; max-width: 54mm; margin:0; border:none; }
+    #ticket h3{ font-size:13px }
+    #ticket table{ font-size:11px }
+    #ticket th,#ticket td{ padding:2px 0; border-bottom:1px dashed #000 }
+    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:10px }
+    /* Evitar cortes feos */
+    tr, td, th, table { page-break-inside: avoid; break-inside: avoid; }
+  }
+</style>
 </head>
 <body>
-  <h2>Pedido CVC</h2>
-  <form id="pedido-form">
-    <label>Nombre del Cliente:
-      <input type="text" id="nombre" required>
-    </label>
-    <label>Dirección:
-      <input type="text" id="direccion" required>
-    </label>
-    <label>Quién Entrega:
-      <input type="text" id="entrega" required>
-    </label>
-    <label>¿Es venta a mostrador?
-      <select id="mostrador">
-        <option value="Sí">Sí</option>
-        <option value="No">No</option>
+<header><h1>CVC — Captura de Pedidos (Supabase) — 58mm</h1></header>
+
+<main>
+
+  <!-- AUTENTICACIÓN -->
+  <section class="card">
+    <h2>Acceso</h2>
+    <div class="row-3">
+      <div><label>Email</label><input id="email" type="email" placeholder="tu@correo.com"></div>
+      <div><label>Contraseña</label><input id="pass" type="password" placeholder="********"></div>
+      <div class="grid">
+        <button id="btnSignUp">Crear cuenta</button>
+        <button id="btnSignIn">Iniciar sesión</button>
+        <button id="btnSignOut">Salir</button>
+      </div>
+    </div>
+    <div id="authMsg" class="muted"></div>
+  </section>
+
+  <!-- FORM PEDIDO -->
+  <section class="card">
+    <h2>1) Datos del pedido</h2>
+    <div class="row-3">
+      <div><label>Cliente</label><input id="cliente" placeholder="Ej. Don Toño Ramírez"></div>
+      <div><label>Teléfono</label><input id="telefono" placeholder="462 123 4567"></div>
+      <div>
+        <label>Entrega</label>
+        <select id="entrega">
+          <option value="venta a mostrador">Venta a mostrador</option>
+          <option value="fer">Reparto con Fer</option>
+          <option value="neto">Reparto con Neto</option>
+          <option value="paco">Reparto con Paco</option>
+          <option value="delivery">Delivery</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-2">
+      <div><label>Hora estimada</label><input id="hora" type="time"></div>
+      <div><label>Dirección</label><input id="direccion" placeholder="Calle, número, colonia, referencias"></div>
+    </div>
+    <label>Observaciones</label><input id="obs" placeholder="Ej. cabeza partida en 4; patas en rodajas">
+  </section>
+
+  <section class="card">
+    <h2>2) Productos (kg / pza)</h2>
+    <div class="row-2">
+      <input id="buscar" placeholder="Buscar producto…">
+      <select id="filtroU">
+        <option value="">kg/pza</option><option value="kg">kg</option><option value="pza">pza</option>
       </select>
-    </label>
-    <div id="productos"></div>
-    <button type="button" onclick="agregarProducto()">Agregar Producto</button>
-    <button type="submit">Generar Comanda</button>
-  </form>
+    </div>
+    <div id="lista" class="grid"></div>
+    <div class="muted">Marca el producto, pon cantidad y elige unidad (kg o pza). Nota por producto opcional.</div>
+  </section>
 
-  <div class="ticket" id="ticket"></div>
+  <section class="card" id="printCard">
+    <h2 class="no-print">3) Guardar e imprimir</h2>
+    <div class="row-2 no-print">
+      <button id="guardar">Guardar en Supabase + Generar comanda</button>
+      <button id="limpiar" class="no-print">Limpiar</button>
+    </div>
+    <div id="saveMsg" class="muted no-print"></div>
+    <div id="ticket" style="margin-top:8px;">
+      <!-- Ticket dinámico -->
+    </div>
+    <div class="no-print" style="text-align:right;margin-top:8px;">
+      <button onclick="window.print()">Imprimir</button>
+    </div>
+    <div class="cut-hint no-print">Imprime en 58mm • En el cuadro de impresión, elige tamaño de papel 58mm o “ancho 58 mm”.</div>
+  </section>
 
-  <script>
-    let index = 0;
+</main>
 
-    function agregarProducto() {
-      const div = document.createElement('div');
-      div.innerHTML = `
-        <label>Producto:
-          <input type="text" name="producto-${index}" required>
-        </label>
-        <label>Cantidad:
-          <input type="number" name="cantidad-${index}" min="0" step="any" required>
-        </label>
-        <label>Unidad:
-          <select name="unidad-${index}">
-            <option value="kg">Kilos</option>
-            <option value="pzas">Piezas</option>
-          </select>
-        </label>
-        <hr>
-      `;
-      document.getElementById("productos").appendChild(div);
-      index++;
-    }
+<!-- Supabase JS -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+// ============= CONFIG (tus llaves) =============
+const SUPABASE_URL = "https://lujroedkbgffobyblbie.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1anJvZWRrYmdmZm9ieWJsYmllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxODkzNDgsImV4cCI6MjA3MDc2NTM0OH0.bSbBZeS59aPSEGPj1YGcmZCyQTfgf3fz9pNDuR2ID7c";
+// ==============================================
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    document.getElementById("pedido-form").addEventListener("submit", function(e) {
-      e.preventDefault();
+// Estado
+let SESSION = null;
+let PRODUCTS = [];
 
-      const nombre = document.getElementById("nombre").value;
-      const direccion = document.getElementById("direccion").value;
-      const entrega = document.getElementById("entrega").value;
-      const mostrador = document.getElementById("mostrador").value;
+// Helpers UI
+const el = id => document.getElementById(id);
+const authMsg = el('authMsg'), saveMsg = el('saveMsg');
+const lista = el('lista');
 
-      let productos = "";
-      for (let i = 0; i < index; i++) {
-        const prod = document.querySelector(`[name='producto-${i}']`).value;
-        const cant = document.querySelector(`[name='cantidad-${i}']`).value;
-        const unid = document.querySelector(`[name='unidad-${i}']`).value;
-        productos += `\n${prod} - ${cant} ${unid}`;
-      }
+// --------- Auth ---------
+async function signUp(){
+  const { error } = await sb.auth.signUp({ email: el('email').value.trim(), password: el('pass').value.trim() });
+  authMsg.textContent = error ? "Error: " + error.message : "Cuenta creada. Si te pide verificación, revisa tu correo o inicia sesión directo.";
+}
+async function signIn(){
+  const { error } = await sb.auth.signInWithPassword({ email: el('email').value.trim(), password: el('pass').value.trim() });
+  authMsg.textContent = error ? "Error: " + error.message : "Sesión iniciada.";
+}
+async function signOut(){
+  await sb.auth.signOut(); authMsg.textContent = "Sesión cerrada."; SESSION = null; renderLocked();
+}
+sb.auth.onAuthStateChange((evt, session)=>{ SESSION = session; if(session){ loadProducts(); renderUnlocked(); } else { renderLocked(); }});
 
-      const ticketHTML = `
-        <strong>Cliente:</strong> ${nombre}<br>
-        <strong>Dirección:</strong> ${direccion}<br>
-        <strong>Entrega:</strong> ${entrega}<br>
-        <strong>Mostrador:</strong> ${mostrador}<br>
-        <strong>Productos:</strong><pre>${productos}</pre>
-        <button onclick="window.print()">🖨️ Imprimir Ticket</button>
-      `;
-      document.getElementById("ticket").innerHTML = ticketHTML;
+// --------- Productos ----------
+function renderLocked(){
+  lista.innerHTML = '<div class="muted">Inicia sesión para cargar productos…</div>';
+}
+function renderUnlocked(){
+  if(!PRODUCTS.length){ lista.innerHTML = '<div class="muted">Cargando productos…</div>'; }
+}
+async function loadProducts(){
+  const { data, error } = await sb.from('products').select('*').eq('is_active', true).order('name');
+  if(error){ lista.innerHTML = '<div class="err">Error cargando productos: '+error.message+'</div>'; return; }
+  const rows = data || [];
+  const seen = new Set();
+  PRODUCTS = rows.filter(p => {
+    const k = (p.name || '').toLowerCase();
+    if(seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  renderProducts();
+}
 
-      // Limpia el formulario para el siguiente pedido
-      document.getElementById("pedido-form").reset();
-      document.getElementById("productos").innerHTML = "";
-      index = 0;
-    });
-  </script>
+function renderProducts(){
+  const q = el('buscar').value.toLowerCase().trim();
+  const unitFilter = el('filtroU').value;
+  lista.innerHTML = '';
+  PRODUCTS.filter(p => !q || p.name.toLowerCase().includes(q)).forEach((p)=>{
+    const card = document.createElement('div'); card.className='product';
+    card.innerHTML = `
+      <div class="p-head">
+        <input type="checkbox" class="p-check" />
+        <div class="p-name">${p.name}</div>
+      </div>
+      <div class="p-ctrls">
+        <input type="number" class="p-qty" min="0" step="0.1" placeholder="cant.">
+        <select class="p-unit">
+          <option value="kg"${(unitFilter||p.default_unit)==='kg'?' selected':''}>kg</option>
+          <option value="pza"${(unitFilter||p.default_unit)==='pza'?' selected':''}>pza</option>
+        </select>
+        <input class="p-note" placeholder="nota (opcional)">
+      </div>`;
+    card.dataset.pid = p.id;
+    card.dataset.pname = p.name;
+    lista.appendChild(card);
+  });
+}
+
+document.getElementById('buscar').addEventListener('input', renderProducts);
+document.getElementById('filtroU').addEventListener('change', renderProducts);
+
+// --------- Guardar pedido ----------
+function gatherItems(){
+  const rows = [...lista.querySelectorAll('.product')];
+  const items = [];
+  let totalKg=0, totalPza=0;
+  rows.forEach(r=>{
+    const chk = r.querySelector('.p-check').checked;
+    if(!chk) return;
+    const qty = parseFloat(r.querySelector('.p-qty').value || '0');
+    if(!qty || qty<=0) return;
+    const unit = r.querySelector('.p-unit').value;
+    const note = r.querySelector('.p-note').value.trim();
+    const product_id = r.dataset.pid;
+    const product_name = r.dataset.pname;
+    items.push({ product_id, product_name, qty, unit, note });
+    if(unit==='kg') totalKg+=qty; else totalPza+=qty;
+  });
+  return { items, totals:{ totalKg, totalPza } };
+}
+
+async function guardar(){
+  saveMsg.textContent = '';
+  if(!SESSION){ saveMsg.textContent = 'Inicia sesión primero.'; return; }
+
+  const cliente = el('cliente').value.trim();
+  const telefono = el('telefono').value.trim();
+  const direccion = el('direccion').value.trim();
+  const entrega = el('entrega').value;
+  const hora = el('hora').value;
+  const obs = el('obs').value.trim();
+
+  const { items, totals } = gatherItems();
+  if(items.length===0){ saveMsg.textContent='Selecciona al menos un producto con cantidad.'; return; }
+
+  const { data: orderIns, error: orderErr } = await sb.from('orders')
+    .insert({
+      customer_name: cliente || null,
+      phone: telefono || null,
+      address: direccion || null,
+      delivery_type: entrega,
+      eta: hora || null,
+      notes: obs || null,
+      total_kg: totals.totalKg,
+      total_pza: totals.totalPza,
+      status: 'tomado'
+    })
+    .select('id')
+    .single();
+
+  if(orderErr){ saveMsg.innerHTML = '<span class="err">Error guardando pedido: '+orderErr.message+'</span>'; return; }
+
+  const order_id = orderIns.id;
+
+  const itemsPayload = items.map(it=>({
+    order_id,
+    product_id: it.product_id,
+    product_name: it.product_name,
+    qty: it.qty,
+    unit: it.unit,
+    note: it.note || null
+  }));
+
+  const { error: itemsErr } = await sb.from('order_items').insert(itemsPayload);
+  if(itemsErr){ saveMsg.innerHTML = '<span class="err">Pedido creado pero falló insertar partidas: '+itemsErr.message+'</span>'; return; }
+
+  saveMsg.innerHTML = '<span class="ok">✅ Pedido guardado. Generando comanda…</span>';
+  renderTicket({ id: order_id, cliente, telefono, direccion, entrega, hora, obs, items, totals });
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function renderTicket({ id, cliente, telefono, direccion, entrega, hora, obs, items, totals }){
+  const t = document.getElementById('ticket');
+  t.innerHTML = `
+    <div class="center">COMANDA • CVC</div>
+    <div style="font-size:11px;margin:4px 0;">#${id}</div>
+    <div style="font-size:11px;margin-bottom:6px;">
+      ${cliente||'(sin nombre)'} • Tel: ${telefono||'—'}<br>
+      Dir: ${direccion||'—'}<br>
+      Entrega: ${entrega} • Hora: ${hora||'—'}<br>
+      Obs: ${obs||'—'}
+    </div>
+    <table>
+      <thead><tr><th>Prod</th><th class="right">Cant</th><th>U</th><th>Nota</th></tr></thead>
+      <tbody>
+        ${items.map(it=>`<tr><td>${it.product_name}</td><td class="right">${it.qty.toFixed(2)}</td><td>${it.unit}</td><td>${it.note||''}</td></tr>`).join('')}
+      </tbody>
+      <tfoot>
+        <tr><td>Total kg</td><td class="right" colspan="3">${totals.totalKg.toFixed(2)}</td></tr>
+        <tr><td>Total pzas</td><td class="right" colspan="3">${Math.round(totals.totalPza)}</td></tr>
+      </tfoot>
+    </table>
+    <div style="height:18px"></div>
+    <div style="border-top:1px solid #000; padding-top:6px; text-align:center; font-size:11px;">Firma de recibido</div>
+  `;
+}
+
+function limpiar(){
+  ['cliente','telefono','direccion','hora','obs'].forEach(id=>el(id).value='');
+  el('entrega').selectedIndex=0;
+  el('buscar').value=''; el('filtroU').value='';
+  renderProducts();
+  document.getElementById('ticket').innerHTML='';
+  saveMsg.textContent='';
+}
+
+// Eventos
+el('btnSignUp').onclick = signUp;
+el('btnSignIn').onclick = signIn;
+el('btnSignOut').onclick = signOut;
+el('guardar').onclick = guardar;
+el('limpiar').onclick = limpiar;
+el('buscar').addEventListener('input', renderProducts);
+el('filtroU').addEventListener('change', renderProducts);
+
+// Estado inicial
+renderLocked();
+</script>
 </body>
 </html>
+"""
+
+out_file = "/mnt/data/cvc_pedidos_58mm.html"
+with open(out_file, "w", encoding="utf-8") as f:
+    f.write(html_58mm)
+
+out_file
