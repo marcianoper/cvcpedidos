@@ -280,7 +280,7 @@ function renderTicket({ id, cliente, telefono, direccion, entrega, hora, obs, it
   const t = document.getElementById('ticket');
   t.innerHTML = `
     <div class="center">COMANDA • CVC</div>
-    <div style="font-size:12px;margin:4px 0;">#${id}</div>
+    <div style="font-size:12px;margin:1px 0;">#${id}</div>
     <div style="font-size:12px;margin-bottom:6px;">
       ${cliente||'(sin nombre)'} • Tel: ${telefono||'—'}<br>
       Dir: ${direccion||'—'}<br>
