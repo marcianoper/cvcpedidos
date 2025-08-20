@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CVC Pedidos </title>
+<title>CVC Pedidos (Supabase) — 58mm</title>
 <style>
   :root{--ink:#111}
   *{box-sizing:border-box}
@@ -28,46 +28,33 @@
 
   /* Ticket base (pantalla) */
   #ticket{background:#fff;border:1px dashed #999;border-radius:10px;padding:10px;max-width:320px;margin:0 auto}
-  #ticket h3{margin:0 0 6px;text-align:center;font-size:10px}
-  #ticket .meta{font-size:12px;margin-bottom:0px}
+  #ticket h3{margin:0 0 6px;text-align:center;font-size:14px}
+  #ticket .meta{font-size:12px;margin-bottom:6px}
   #ticket table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
   #ticket th,#ticket td{padding:4px 2px;border-bottom:1px dashed #ddd;word-wrap:break-word}
   #ticket tfoot td{border-top:1px solid #999;font-weight:bold}
   #ticket .center{text-align:center}
 
   /* PRINT 58mm */
-@media print {
-  @page { size: 58mm auto; margin: 0mm; } /* ancho rollo 58mm */
-  body { background: #fff; margin: 0; padding: 0; }
-  header, main > .card:not(#printCard), .no-print { display:none !important; }
-  #printCard { display:block !important; padding:0; box-shadow:none; border:none; }
-
-  html, body {
-    width: 58mm;
-    height: auto;
+  @media print {
+    @page { size: 58mm auto; margin: 2mm; } /* ancho rollo 58mm */
+    body{background:#fff}
+    header, main > .card:not(#printCard), .no-print { display:none !important; }
+    #printCard{ display:block !important; padding:0; box-shadow:none; border:none; }
+    #ticket{ width: 54mm; max-width: 54mm; margin:0; border:none; }
+    #ticket h3{ font-size:13px }
+    #ticket table{ font-size:11px }
+    #ticket th,#ticket td{ padding:2px 0; border-bottom:1px dashed #000 }
+    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:10px }
+    /* Evitar cortes feos */
+    tr, td, th, table { page-break-inside: avoid; break-inside: avoid; }
   }
+</style>
+</head>
+<body>
+<header><h1>CVC — Captura de Pedidos (Supabase) — 58mm</h1></header>
 
-  #ticket {
-    width: 56mm;
-    max-width: 56mm;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0;
-    border: none;
-  }
-
-  #ticket h3 { font-size:13px }
-  #ticket table { font-size:10px }
-  #ticket th,#ticket td { padding:.05mm 0; border-bottom:1px dashed #000 }
-  .cut-hint { display:block; text-align:center; margin-top:6px; font-size:10px }
-
-  tr, td, th, table {
-    page-break-inside: avoid;
-    break-inside: avoid;
-    window.print();
-  }
-}
-
+<main>
 
   <!-- AUTENTICACIÓN -->
   <section class="card">
@@ -293,25 +280,25 @@ function renderTicket({ id, cliente, telefono, direccion, entrega, hora, obs, it
   const t = document.getElementById('ticket');
   t.innerHTML = `
     <div class="center">COMANDA • CVC</div>
-    <div style="font-size:10px;margin:0px 0;">#${id}</div>
-    <div style="font-size:10px;margin-bottom:3px;">
+    <div style="font-size:11px;margin:4px 0;">#${id}</div>
+    <div style="font-size:11px;margin-bottom:6px;">
       ${cliente||'(sin nombre)'} • Tel: ${telefono||'—'}<br>
       Dir: ${direccion||'—'}<br>
       Entrega: ${entrega} • Hora: ${hora||'—'}<br>
       Obs: ${obs||'—'}
     </div>
     <table>
-      <thead><tr><th>Prod</th><th class="rightr">Cant</th><th>U</th><th>Nota</th></tr></thead>
+      <thead><tr><th>Prod</th><th class="right">Cant</th><th>U</th><th>Nota</th></tr></thead>
       <tbody>
-        ${items.map(it=>`<tr><td>${it.product_name}</td><td class="rightr">${it.qty.toFixed(2)}</td><td>${it.unit}</td><td>${it.note||''}</td></tr>`).join('')}
+        ${items.map(it=>`<tr><td>${it.product_name}</td><td class="right">${it.qty.toFixed(2)}</td><td>${it.unit}</td><td>${it.note||''}</td></tr>`).join('')}
       </tbody>
       <tfoot>
         <tr><td>Total kg</td><td class="right" colspan="3">${totals.totalKg.toFixed(2)}</td></tr>
         <tr><td>Total pzas</td><td class="right" colspan="3">${Math.round(totals.totalPza)}</td></tr>
       </tfoot>
     </table>
-    <div style="height:16px"></div>
-    <div style="border-top:1px solid #000; padding-top:8px; text-align:center; font-size:10px;">Firma de recibido</div>
+    <div style="height:18px"></div>
+    <div style="border-top:1px solid #000; padding-top:6px; text-align:center; font-size:11px;">Firma de recibido</div>
   `;
 }
 
