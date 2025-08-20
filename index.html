@@ -35,17 +35,17 @@
   #ticket tfoot td{border-top:1px solid #999;font-weight:bold}
   #ticket .center{text-align:widht}
 
-  /* PRINT 58mm */
+  /* PRINT 50mm */
   @media print {
-    @page { size: 50mm auto; margin: 0mm; } /* ancho rollo 58mm */
+    @page { size: 50mm auto; margin: 0mm; } /* ancho rollo 50mm */
     body{background:#fff}
     header, main > .card:not(#printCard), .no-print { display:none !important; }
     #printCard{ display:block !important; padding:0; box-shadow:none; border:none; }
-    #ticket{ width: 44mm; max-width: 44mm; margin:0 auto; padding:0; border:none; }
+    #ticket{ width: 48mm; max-width: 48mm; margin:0 auto; padding:0; border:none; }
     #ticket h3{ font-size:13px }
-    #ticket table{ font-size:10px }
+    #ticket table{ font-size:12px }
     #ticket th,#ticket td{ padding:.5mm 0; border-bottom:1px dashed #000 }
-    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:10px }
+    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:12px }
     /* Evitar cortes feos */
     tr, td, th, table { page-break-inside: avoid; break-inside: avoid; }
   }
