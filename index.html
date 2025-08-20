@@ -37,15 +37,15 @@
 
   /* PRINT 58mm */
   @media print {
-    @page { size: 48mm auto; margin: .5mm; } /* ancho rollo 58mm */
+    @page { size: 50mm auto; margin: 0mm; } /* ancho rollo 58mm */
     body{background:#fff}
     header, main > .card:not(#printCard), .no-print { display:none !important; }
-    #printCard{ display:block !important; padding:-1; box-shadow:none; border:none; }
-    #ticket{ width: 44mm; max-width: 44mm; margin:0; border:none; }
+    #printCard{ display:block !important; padding:0; box-shadow:none; border:none; }
+    #ticket{ width: 44mm; max-width: 44mm; margin:0 auto; padding:0; border:none; }
     #ticket h3{ font-size:13px }
-    #ticket table{ font-size:11px }
-    #ticket th,#ticket td{ padding:2px -1; border-bottom:1px dashed #000 }
-    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:12px }
+    #ticket table{ font-size:10px }
+    #ticket th,#ticket td{ padding:.5mm 0; border-bottom:1px dashed #000 }
+    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:10px }
     /* Evitar cortes feos */
     tr, td, th, table { page-break-inside: avoid; break-inside: avoid; }
   }
