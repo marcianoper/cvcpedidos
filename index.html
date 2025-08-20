@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CVC Pedidos (Supabase) — 58mm</title>
+<title>CVC Pedidos carnes y visceras</title>
 <style>
   :root{--ink:#111}
   *{box-sizing:border-box}
@@ -37,22 +37,22 @@
 
   /* PRINT 58mm */
   @media print {
-    @page { size: 58mm auto; margin: 2mm; } /* ancho rollo 58mm */
+    @page { size: 50mm auto; margin: .5mm; } /* ancho rollo 58mm */
     body{background:#fff}
     header, main > .card:not(#printCard), .no-print { display:none !important; }
     #printCard{ display:block !important; padding:0; box-shadow:none; border:none; }
-    #ticket{ width: 54mm; max-width: 54mm; margin:0; border:none; }
+    #ticket{ width: 46mm; max-width: 46mm; margin:0; border:none; }
     #ticket h3{ font-size:13px }
     #ticket table{ font-size:11px }
     #ticket th,#ticket td{ padding:2px 0; border-bottom:1px dashed #000 }
-    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:10px }
+    .cut-hint{ display:block; text-align:center; margin-top:6px; font-size:12px }
     /* Evitar cortes feos */
     tr, td, th, table { page-break-inside: avoid; break-inside: avoid; }
   }
 </style>
 </head>
 <body>
-<header><h1>CVC — Captura de Pedidos (Supabase) — 58mm</h1></header>
+<header><h1>CVC — Captura de Pedidos (Supabase) </h1></header>
 
 <main>
 
@@ -120,7 +120,7 @@
     <div class="no-print" style="text-align:right;margin-top:8px;">
       <button onclick="window.print()">Imprimir</button>
     </div>
-    <div class="cut-hint no-print">Imprime en 58mm • En el cuadro de impresión, elige tamaño de papel 58mm o “ancho 58 mm”.</div>
+    <div class="cut-hint no-print">SIEMPRE CON TODA LA ACTITUD.</div>
   </section>
 
 </main>
