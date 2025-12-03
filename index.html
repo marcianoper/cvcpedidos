@@ -265,7 +265,6 @@
       <button class="btn btn-ghost" id="btnWA">WhatsApp Cuenta</button>
       <button class="btn btn-ghost" id="btnImprimir">Imprimir A4</button>
       <button class="btn btn-ghost" id="btnImprimir80">Imprimir 80mm</button>
-      <!-- Botón RawBT eliminado -->
       <button class="btn btn-ghost" id="btnCSV">Exportar CSV</button>
       <button class="btn btn-ghost danger right" id="btnCerrar">Cerrar Nota</button>
     </div>
@@ -511,7 +510,7 @@ async function saveClientPhone(){
   }catch(e){ console.error(e); }
 }
 
-/* ========================= GUARDAR OBSERVACIONES ========================= */
+/* ========================= GUARDAR OBSERVACIONES MANUALES ========================= */
 async function saveNotaObs(){
   const n = activeNota(); 
   if(!n) return;
@@ -655,7 +654,7 @@ async function renderVista(){
   vEstado.textContent = nota.estado||'abierta'; 
   vSaldo.textContent = to2(nota.saldo||0);
 
-  /* === NUEVO: Observaciones automáticas por producto === */
+  /* === Observaciones automáticas por producto === */
   const autoObs = buildAutoObsFromDetalle(det || []);
   notaObs.value = autoObs;
   try{
@@ -993,6 +992,10 @@ async function imprimirNota80mm(nota_id){
         font-size:11px;
         margin-bottom:4px;
       }
+      #ticket .obs-block{
+        margin-top:2px;
+        white-space:pre-wrap;
+      }
       #ticket table{
         width:100%;
         border-collapse:collapse;
@@ -1031,7 +1034,8 @@ async function imprimirNota80mm(nota_id){
         Cliente: ${cliente}<br/>
         Folio: ${nota.folio}<br/>
         Fecha: ${nota.fecha}<br/>
-        Obs: ${obs}
+        <div class="obs-block">Obs:
+${obs}</div>
       </div>
       <table>
         <thead>
@@ -1060,7 +1064,7 @@ async function imprimirNota80mm(nota_id){
   setTimeout(()=>{ win.print(); }, 300);
 }
 
-/* ========================= REPORTE DIARIO GENERAL (CARTA horizontal, 2 columnas, sin PU ni Importe) ========================= */
+/* ========================= REPORTE DIARIO GENERAL ========================= */
 async function imprimirDiaA4(){
   const f = diaFecha.value || todayISO();
 
@@ -1270,4 +1274,5 @@ async function cerrarNota(){
 </script>
 </body>
 </html>
+
 
